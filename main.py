@@ -5,7 +5,7 @@ import shutil
 import matplotlib.pyplot as plt
 
 from model import MyModel
-from utils import AverageMeter, save_model
+from utils import AverageMeter, save_model, organize_images
 from torchvision import transforms
 from tqdm import tqdm
 from torch.utils.data import DataLoader, random_split
@@ -27,7 +27,7 @@ def plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losse
     ax[1].set_ylabel("Accuracy")
     ax[1].legend()
     plt.show()    
-
+'''
 def organize_images(config):
     if not os.path.exists(config["folder_data_path"]) or not os.path.isdir(config["folder_data_path"]) or not os.listdir(config["folder_data_path"]):
         with zipfile.ZipFile(config["data_zip_name"]) as zf:
@@ -50,6 +50,7 @@ def organize_images(config):
                                 transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
                                 ])
     
+    torch.manual_seed(0)
     dataset = ImageFolder(config["folder_data_path"] + "/george_test_task", trans)
 
     # Split the dataset into train, validation, and test sets
@@ -64,7 +65,7 @@ def organize_images(config):
     test_loader = DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=True)
 
     return train_loader, val_loader, test_loader
-
+'''
 #model: model to use
 #optimizer: optimizer to use
 #criterion: loss function to use
@@ -115,7 +116,7 @@ def train_model(train_loader, val_loader, test_loader, config):
     train_accuracies, train_losses, val_accuracies, val_losses = [], [], [], []
 
     my_model = MyModel().to(device)
-    optimizer = torch.optim.Adam(my_model.parameters(), lr=config["learning_rate"])
+    optimizer = torch.optim.Adam(my_model.parameters(), lr=config["learning_rate"], weight_decay=config["weight_decay"])
     criterion = torch.nn.BCELoss()
 
     for epoch in range(config["epochs"]):
@@ -133,11 +134,15 @@ def train_model(train_loader, val_loader, test_loader, config):
 if __name__ == "__main__":
 
     config = {
-        "batch_size": 64,
-        "learning_rate": 0.001,
-        "epochs": 100,
+        "batch_size": 100,
+        "learning_rate": 0.01,
+        "weight_decay": 0.0001,
+        "epochs": 16,
         "data_zip_name": "george_test_task.zip",
-        "folder_data_path": "./data"
+        "folder_data_path": "./data/george_test_task",
+        "train_dir": "./train",
+        "eval_dir": "./eval",
+        "test_dir": "./test"
     }
 
     train_loader, val_loader, test_loader = organize_images(config)
