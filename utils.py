@@ -3,11 +3,14 @@ import os
 import zipfile
 import shutil
 import random
-import tqdm
+import matplotlib.pyplot as plt
 
+from tqdm import tqdm
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from torch.utils.data import DataLoader
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -29,6 +32,86 @@ class AverageMeter(object):
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
+
+def plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losses):
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+    ax[0].plot(train_losses, label="Train")
+    ax[0].plot(val_losses, label="Validation")
+    ax[0].set_xlabel("Epoch")
+    ax[0].set_ylabel("Loss")
+    ax[0].legend()
+    ax[1].plot(train_accuracies, label="Train")
+    ax[1].plot(val_accuracies, label="Validation")
+    ax[1].set_xlabel("Epoch")
+    ax[1].set_ylabel("Accuracy")
+    ax[1].legend()
+    plt.show() 
+
+def compute_mean_std(dataset):
+    # Compute the mean and std of the dataset
+    mean = 0.
+    std = 0.
+    print("Going to compute mean std")
+    for images, _ in dataset:
+        # We assume the images are in range [0, 1]
+        mean += images.mean(axis=(1, 2))
+        std += images.std(axis=(1, 2))
+
+    mean /= len(dataset)
+    std /= len(dataset)
+    print("mean: ", mean)
+    print("std: ", std)
+    return mean, std
+
+#model: model to use
+#optimizer: optimizer to use
+#criterion: loss function to use
+#dataloader: data loader to use
+#epoch_info: tuple with the current epoch and the total number of epochs
+def train_single_epoch(model, optimizer, criterion, dataloader, epoch_info):
+    model.train()
+    train_loss = AverageMeter()
+    train_accuracy = AverageMeter()
+    train_loop = tqdm(dataloader, unit=" batches")
+    for data, target in train_loop:
+        train_loop.set_description('[TRAIN] Epoch {}/{}'.format(epoch_info[0] + 1, epoch_info[1]))
+        data, target = data.float().to(device), target.float().to(device)
+        target = target.unsqueeze(-1)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        train_loss.update(loss.item(), n=len(target))
+        pred = output.round()  # get the prediction
+        acc = pred.eq(target.view_as(pred)).sum().item()/len(target) #we get the accuracy of the prediction
+        train_accuracy.update(acc, n=len(target))
+        train_loop.set_postfix(loss=train_loss.avg, accuracy=train_accuracy.avg)
+    return train_loss.avg, train_accuracy.avg
+
+#model: model to use
+#criterion: loss function to use
+#dataloader: data loader to use
+#epoch_info: tuple with the current epoch and the total number of epochs
+def validate_single_epoch(model, criterion, dataloader, epoch_info):
+    model.eval()
+    val_loss = AverageMeter()
+    val_accuracy = AverageMeter()
+    val_loop = tqdm(dataloader, unit=" batches")
+    with torch.no_grad():
+        for data, target in val_loop:
+            val_loop.set_description('[VALIDATION] Epoch {}/{}'.format(epoch_info[0] + 1, epoch_info[1]))
+            data, target = data.float().to(device), target.float().to(device)
+            target = target.unsqueeze(-1)
+            output = model(data)
+            loss = criterion(output, target)
+            val_loss.update(loss.item(), n=len(target))
+            pred = output.round()  # get the prediction
+            acc = pred.eq(target.view_as(pred)).sum().item()/len(target) #we get the accuracy of the prediction
+            val_accuracy.update(acc, n=len(target))
+            val_loop.set_postfix(loss=val_loss.avg, accuracy=val_accuracy.avg)
+    return val_loss.avg, val_accuracy.avg
+
 
 def organize_images(config):
     if not os.path.exists(config["folder_data_path"]) or not os.path.isdir(config["folder_data_path"]) or not os.listdir(config["folder_data_path"]):
@@ -94,16 +177,32 @@ def organize_images(config):
             src_path = os.path.join(class_dir, filename)
             dst_path = os.path.join('./', dirname, class_name, filename)
             shutil.copyfile(src_path, dst_path)
-        
+    
+    if "mean_std" in config and config["mean_std"]:
+        trans_to_tensor = transforms.Compose([
+                            transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
+                            ])
+        dataset = ImageFolder(config["train_dir"], trans_to_tensor)
+        mean, std = compute_mean_std(dataset)
+        print("Mean: ", mean)
+        print("Std: ", std)
+
     trans = transforms.Compose([
                             transforms.Resize(150), # Resize the short side of the image to 150 keeping aspect ratio
                             transforms.CenterCrop(150), # Crop a square in the center of the image
                             transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
+                            #transforms.Normalize(config["mean"], config["std"]) # Normalize the image with the mean and std computed above
                             ])
+    
+    if "mean" in config and "std" in config:
+        trans.transforms.append(transforms.Normalize(config["mean"], config["std"]))
     
     train_dataset = ImageFolder(config["train_dir"], trans)
     eval_dataset = ImageFolder(config["eval_dir"], trans)
     test_dataset = ImageFolder(config["test_dir"], trans)
+
+    
+
 
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True)
     eval_loader = DataLoader(eval_dataset, batch_size=config["batch_size"], shuffle=True)
