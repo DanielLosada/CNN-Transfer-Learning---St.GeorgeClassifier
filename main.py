@@ -45,7 +45,7 @@ if __name__ == "__main__":
         "epochs": 16,
         "mean_std": False,
         "data_zip_name": "george_test_task.zip",
-        "folder_data_path": "./data/george_test_task",
+        "folder_data_path": "./data",
         "train_dir": "./train",
         "eval_dir": "./eval",
         "test_dir": "./test",

@@ -57,7 +57,7 @@ if __name__ == "__main__":
         "weight_decay": 0.01,
         "epochs": 10,
         "data_zip_name": "george_test_task.zip",
-        "folder_data_path": "./data/george_test_task",
+        "folder_data_path": "./data",
         "train_dir": "./train",
         "eval_dir": "./eval",
         "test_dir": "./test",

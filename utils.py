@@ -4,7 +4,9 @@ import zipfile
 import shutil
 import random
 import matplotlib.pyplot as plt
+import numpy as np
 
+from imgaug import augmenters as iaa
 from tqdm import tqdm
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
@@ -133,7 +135,7 @@ def organize_images(config):
     # Loop over the subdirectories and create train, validation, and test sets
     for class_name in class_names:
         # Set the path to the class directory
-        class_dir = os.path.join(config["folder_data_path"], class_name)
+        class_dir = os.path.join(config["folder_data_path"],"george_test_task", class_name)
 
         # Get a list of all the image filenames in the class directory
         image_filenames = os.listdir(class_dir)
@@ -188,20 +190,36 @@ def organize_images(config):
         print("Std: ", std)
 
     trans = transforms.Compose([
-                            transforms.Resize(150), # Resize the short side of the image to 150 keeping aspect ratio
+                            transforms.Resize((150, 150)), # Resize the short side of the image to 150 keeping aspect ratio
                             transforms.CenterCrop(150), # Crop a square in the center of the image
                             transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
                             #transforms.Normalize(config["mean"], config["std"]) # Normalize the image with the mean and std computed above
                             ])
     
+    trans_train = transforms.Compose([
+        transforms.Resize((150,150)), # Resize the short side of the image to 150 keeping aspect ratio
+        transforms.CenterCrop(150),
+        np.asarray,
+        iaa.Sequential([
+            iaa.flip.Fliplr(p=0.5),
+            iaa.flip.Flipud(p=0.5),
+            iaa.Sometimes(0.2, [
+            iaa.Grayscale(),
+            ]),
+            iaa.AverageBlur(k = (0,5)),
+            iaa.MultiplyBrightness(mul=(0.65, 1.35)),
+        ], random_order = True).augment_image,
+        #save_img,
+        np.copy,
+        transforms.ToTensor()
+    ])
+    
     if "mean" in config and "std" in config:
         trans.transforms.append(transforms.Normalize(config["mean"], config["std"]))
     
-    train_dataset = ImageFolder(config["train_dir"], trans)
+    train_dataset = ImageFolder(config["train_dir"], trans_train)
     eval_dataset = ImageFolder(config["eval_dir"], trans)
     test_dataset = ImageFolder(config["test_dir"], trans)
-
-    
 
 
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True)
@@ -209,3 +227,12 @@ def organize_images(config):
     test_loader = DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=True)
 
     return train_loader, eval_loader, test_loader
+
+def save_img(x):
+    from torchvision.utils import save_image
+    from PIL import Image
+    import uuid
+
+    im = Image.fromarray(x)
+    im.save(f"imgs/img{str(uuid.uuid4())}.png")
+    return x 
