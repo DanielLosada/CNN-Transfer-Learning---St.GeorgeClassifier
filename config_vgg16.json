@@ -1,0 +1,12 @@
+{
+    "batch_size": 20,
+    "learning_rate": 0.001,
+    "weight_decay": 0.001,
+    "epochs": 20,
+    "data_zip_name": "george_test_task.zip",
+    "folder_data_path": "./data",
+    "train_dir": "./train",
+    "eval_dir": "./eval",
+    "test_dir": "./test",
+    "name_to_save_model": "model_transfer.pth"
+}

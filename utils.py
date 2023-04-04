@@ -40,6 +40,11 @@ class AverageMeter(object):
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
+    
+def load_config(config_path):
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    return config
 
 def recall(outputs, targets):
     tp = torch.sum((outputs == 1) & (targets == 1)).item()
@@ -148,7 +153,7 @@ def train_single_epoch(model, optimizer, criterion, dataloader, epoch_info):
 #criterion: loss function to use
 #dataloader: data loader to use
 #epoch_info: tuple with the current epoch and the total number of epochs
-def validate_single_epoch(model, criterion, dataloader, epoch_info, counter = None, best_val_loss = None):
+def validate_single_epoch(model, criterion, dataloader, epoch_info, counter, best_val_loss, name_to_save_model = "best_model.pth"):
     model.eval()
     val_loss = AverageMeter()
     val_accuracy = AverageMeter()
@@ -170,7 +175,7 @@ def validate_single_epoch(model, criterion, dataloader, epoch_info, counter = No
     
     if(val_loss.avg < best_val_loss):
         best_val_loss = val_loss.avg
-        torch.save(model.state_dict(), "best_model_smallnet.pth")
+        torch.save(model.state_dict(), name_to_save_model)
         counter = 0
     else:
         counter += 1
@@ -302,6 +307,17 @@ def load_test_dataset_smallnet(config):
     test_loader = DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=True)
     return test_loader
 
+def load_test_dataset_vgg16(config):
+    trans = transforms.Compose([
+                            transforms.Resize((224, 224)), # Resize the short side of the image to 224
+                            transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
+                            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                            ])
+    
+    test_dataset = ImageFolder(config["test_dir"], trans)
+    test_loader = DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=True)
+    return test_loader
+
 def load_datasets_vgg16(config):
     trans = transforms.Compose([
                             transforms.Resize((224, 224)), # Resize the short side of the image to 224
@@ -327,7 +343,7 @@ def load_datasets_vgg16(config):
             iaa.Sometimes(0.5, [
                 iaa.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
             ]),
-            iaa.Sometimes(0.1, [
+            iaa.Sometimes(0.2, [
                 iaa.Grayscale(),
                 #iaa.pillike.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
                 #iaa.Crop(percent=(0, 0.3)),
