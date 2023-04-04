@@ -9,7 +9,7 @@ class FeatureClassifier(nn.Module):
         self.feature_extractor = feature_extractor
 
         self.mlp = nn.Sequential(
-            LinearBlock(4 * 4 * 512, 256),
+            LinearBlock(25088, 256),
             nn.Dropout(dropout),
             nn.Linear(256, 1),
             nn.Sigmoid(),

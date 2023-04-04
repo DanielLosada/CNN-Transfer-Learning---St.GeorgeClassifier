@@ -1,0 +1,22 @@
+{
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "epochs": 25,
+    "mean_std": false,
+    "data_zip_name": "george_test_task.zip",
+    "folder_data_path": "./data",
+    "train_dir": "./train",
+    "eval_dir": "./eval",
+    "test_dir": "./test",
+    "mean": [
+        0.5498923659324646,
+        0.4868305027484894,
+        0.4170515239238739
+    ],
+    "std": [
+        0.23350980877876282,
+        0.23145274817943573,
+        0.22160127758979797
+    ]
+}
