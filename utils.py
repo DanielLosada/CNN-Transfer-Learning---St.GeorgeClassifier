@@ -41,6 +41,12 @@ class AverageMeter(object):
 def save_model(model, path):
     torch.save(model.state_dict(), path)
 
+def recall(outputs, targets):
+    tp = torch.sum((outputs == 1) & (targets == 1)).item()
+    fn = torch.sum((outputs == 0) & (targets == 1)).item()
+    recall = tp / (tp + fn)
+    return recall
+
 def plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losses):
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
     ax[0].plot(train_losses, label="Train")
@@ -55,19 +61,6 @@ def plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losse
     ax[1].legend()
     return plt
     #plt.show() 
-
-def plot_test_loss_accuracy(test_accuracies, test_losses):
-    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
-    ax[0].plot(test_losses, label="Test")
-    ax[0].set_xlabel("Epoch")
-    ax[0].set_ylabel("Loss")
-    ax[0].legend()
-    ax[1].plot(test_accuracies, label="Test")
-    ax[1].set_xlabel("Epoch")
-    ax[1].set_ylabel("Accuracy")
-    ax[1].legend()
-    plt.savefig('smallnet_test_acc_loss.jpg')
-    plt.show() 
 
 def test_single_img(model, trans):
     # open a file dialog box to allow the user to select an image
@@ -185,25 +178,25 @@ def validate_single_epoch(model, criterion, dataloader, epoch_info, counter = No
     return val_loss.avg, val_accuracy.avg, counter, best_val_loss
 
 
-def test_single_epoch(model, criterion, dataloader, epoch_info):
+def test_model(model, criterion, dataloader):
     model.eval()
-    val_loss = AverageMeter()
-    val_accuracy = AverageMeter()
-    val_loop = tqdm(dataloader, unit=" batches")
+    test_loss = AverageMeter()
+    test_accuracy = AverageMeter()
+    test_loop = tqdm(dataloader, unit=" batches")
     with torch.no_grad():
-        for data, target in val_loop:
-            val_loop.set_description('[TEST] Epoch {}/{}'.format(epoch_info[0] + 1, epoch_info[1]))
+        for data, target in test_loop:
+            test_loop.set_description('[TEST]')
             data, target = data.float().to(device), target.float().to(device)
             target = target.unsqueeze(-1)
             output = model(data)
             loss = criterion(output, target)
-            val_loss.update(loss.item(), n=len(target))
+            test_loss.update(loss.item(), n=len(target))
             pred = output.round()  # get the prediction
             acc = pred.eq(target.view_as(pred)).sum().item()/len(target) #we get the accuracy of the prediction
-            val_accuracy.update(acc, n=len(target))
-            val_loop.set_postfix(loss=val_loss.avg, accuracy=val_accuracy.avg)
+            test_accuracy.update(acc, n=len(target))
+            test_loop.set_postfix(loss=test_loss.avg, accuracy=test_accuracy.avg)
     
-    return val_loss.avg, val_accuracy.avg
+    return test_loss.avg, test_accuracy.avg
 
 def prepare_dataset(config):
     if not os.path.exists(config["folder_data_path"]) or not os.path.isdir(config["folder_data_path"]) or not os.listdir(config["folder_data_path"]):
@@ -315,18 +308,45 @@ def load_datasets_vgg16(config):
                             transforms.ToTensor(), # Convert the image to a tensor with pixels in the range [0, 1]
                             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
                             ])
-    
-    transform_aaugmentation =   transforms.Compose([
+    '''
+    transform_augmentation =   transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.1),
         transforms.RandomAffine(degrees=40, translate=None, scale=(1, 2), shear=15),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    ])'''
+    transform_augmentation = transforms.Compose([
+        transforms.Resize((224,224)), # Resize the short side of the image to 150 keeping aspect ratio
+        #transforms.CenterCrop(150),
+        np.asarray,
+        iaa.Sequential([
+            iaa.flip.Fliplr(p=0.5),
+            iaa.flip.Flipud(p=0.5),
+            iaa.Sometimes(0.5, [
+                iaa.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
+            ]),
+            iaa.Sometimes(0.1, [
+                iaa.Grayscale(),
+                #iaa.pillike.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
+                #iaa.Crop(percent=(0, 0.3)),
+                iaa.Dropout(p=(0, 0.2)),
+                iaa.MultiplyBrightness((0.5, 1.5)),
+                iaa.GaussianBlur(sigma=(0.0, 3.0)),
+                iaa.Sharpen(alpha=1.0)
+            ]),
+            #iaa.AverageBlur(k = (0,5)),
+            #iaa.MultiplyBrightness(mul=(0.65, 1.35)),
+        ], random_order = True).augment_image,
+        #save_img,
+        np.copy,
+        transforms.ToTensor(),
+        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
     ])
 
     
-    train_dataset = ImageFolder(config["train_dir"], transform_aaugmentation)
+    train_dataset = ImageFolder(config["train_dir"], transform_augmentation)
     eval_dataset = ImageFolder(config["eval_dir"], trans)
 
 
