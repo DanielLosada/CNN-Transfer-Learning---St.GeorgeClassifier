@@ -53,6 +53,9 @@ To run the FeatureClassifier use:
 ```
 python main_feature_classifier.py
 ```
+
+There are two files, called **config_smallnet.json** and **config_feature_classifier.json**, with some options to tune. Like batch_size, learning_rate...
+
 ## Testing
 ### Smallnet
 For testing the smallnet with the test dataset run:

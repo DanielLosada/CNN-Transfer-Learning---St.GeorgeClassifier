@@ -7,5 +7,6 @@
     "folder_data_path": "./data",
     "train_dir": "./train",
     "eval_dir": "./eval",
-    "test_dir": "./test"
+    "test_dir": "./test",
+    "name_to_save_model": "best_model_smallnet.pth"
 }

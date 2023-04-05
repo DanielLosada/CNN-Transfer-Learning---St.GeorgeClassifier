@@ -31,7 +31,7 @@ def train_model(config, train_loader, val_loader):
 
     for epoch in range(config["epochs"]):
         train_loss, train_acc = train_single_epoch(model, optimizer, criterion, train_loader, (epoch, config["epochs"]))
-        val_loss, val_acc, counter, best_val_loss_after_eval = validate_single_epoch(model, criterion, val_loader, (epoch, config["epochs"]), counter, best_val_loss)
+        val_loss, val_acc, counter, best_val_loss_after_eval = validate_single_epoch(model, criterion, val_loader, (epoch, config["epochs"]), counter, best_val_loss,  config["name_to_save_model"])
         
         #Save the accuracy and loss of the training and validation
         train_accuracies.append(train_acc)
