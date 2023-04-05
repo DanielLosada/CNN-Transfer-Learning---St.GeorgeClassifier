@@ -132,8 +132,8 @@ def calculate_mean_std(config):
 
         # Save the mean and std to the config file
         if not os.path.exists("mean_std.json"):
-            with open("config_smallnet.json", "w") as f:
-                print("Saving mean and std in the config_smallnet.json")
+            with open("config_feature_classifier.json", "w") as f:
+                print("Saving mean and std in the config_feature_classifier.json")
                 config["mean"] = mean.numpy().tolist()
                 config["std"] = std.numpy().tolist()
                 json.dump(config, f, indent=4)
