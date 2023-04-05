@@ -3,7 +3,7 @@ This project is an image classification task using Convolutional Neural Networks
 
 ## Dataset
 The dataset is a two folder directory. The first folder contains images in which St. George appears. The second folder contains images where St. George does **not** appear.
-The dataset can be downloaded here: https://drive.google.com/drive/folders/1fIHdM54Q_eN5ZxF5nAGMaVIirMlNf3Sk?usp=sharing
+The dataset (george_test_task.zip) can be downloaded here: https://drive.google.com/drive/folders/1fIHdM54Q_eN5ZxF5nAGMaVIirMlNf3Sk?usp=sharing
 
 ## Approach
 I approached this image classification task using two models. The first one (called Smallnet) is a simple model made by me. The second approach (called FeatureClassifier) is using the VGG16 pretrained model to use it as a feature extractor for another model made. In both cases I followed this steps:
@@ -82,5 +82,14 @@ If you want to test it with only one image run:
 python test_feature_classifier.py --singleimg
 ```
 An image will be requested automatically.
+
+## Results
+### Smallnet
+
+Test Loss: 0.4867, Test Acc: 0.7649, Recall No George: 0.8802, Recall George: 0.6017
+
+Confusion Matrix:
+TP: 294 FP: 94
+FN: 40  TN: 142
 
 

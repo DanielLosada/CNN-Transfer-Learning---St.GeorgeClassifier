@@ -298,6 +298,7 @@ def prepare_dataset(config):
     train_ratio = 0.70
     val_ratio = 0.20
 
+    print("Preparing splits folders...")
     # Loop over the subdirectories and create train, validation, and test sets
     for class_name in class_names:
         # Set the path to the class directory
