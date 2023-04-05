@@ -31,7 +31,8 @@ if __name__ == "__main__":
 
         #Transform to apply to the image
         trans = transforms.Compose([
-            transforms.Resize((150, 150)),
+            transforms.Resize((150)),
+            transforms.CenterCrop(150),
             transforms.ToTensor(),
         ])
 
