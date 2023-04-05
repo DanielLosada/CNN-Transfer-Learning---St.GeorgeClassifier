@@ -130,13 +130,12 @@ def calculate_mean_std(config):
         print("Mean: ", mean)
         print("Std: ", std)
 
-        # Save the mean and std to the config file
-        if not os.path.exists("mean_std.json"):
-            with open("config_smallnet.json", "w") as f:
-                print("Saving mean and std in the config_smallnet.json")
-                config["mean"] = mean.numpy().tolist()
-                config["std"] = std.numpy().tolist()
-                json.dump(config, f, indent=4)
+        
+        with open("config_smallnet.json", "w") as f:
+            print("Saving mean and std in the config_smallnet.json")
+            config["mean"] = mean.numpy().tolist()
+            config["std"] = std.numpy().tolist()
+            json.dump(config, f, indent=4)
 
 
 def train_single_epoch(model, optimizer, criterion, dataloader, epoch_info):
