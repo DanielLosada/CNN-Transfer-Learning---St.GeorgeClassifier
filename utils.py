@@ -46,12 +46,6 @@ def load_config(config_path):
         config = json.load(f)
     return config
 
-def recall(outputs, targets):
-    """Calculate the recall of the model"""
-    tp = torch.sum((outputs == 1) & (targets == 1)).item()
-    fn = torch.sum((outputs == 0) & (targets == 1)).item()
-    recall = tp / (tp + fn)
-    return recall
 
 def plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losses):
     """Generates the plot of the accuracy and loss of the train and validation process."""
@@ -155,9 +149,11 @@ def train_single_epoch(model, optimizer, criterion, dataloader, epoch_info):
     train_loss = AverageMeter()
     train_accuracy = AverageMeter()
     train_loop = tqdm(dataloader, unit=" batches")
-
+    print("epoch_info: ", epoch_info)
+    print("epoch_info[0] + 1: ", epoch_info[0] + 1)
     for data, target in train_loop:
         #Set description to the progress bar on the terminal
+        
         train_loop.set_description('[TRAIN] Epoch {}/{}'.format(epoch_info[0] + 1, epoch_info[1]))
         
         data, target = data.float().to(device), target.float().to(device)
@@ -244,6 +240,7 @@ def test_model(model, criterion, dataloader):
     #Initialize the meters
     test_loss = AverageMeter()
     test_accuracy = AverageMeter()
+    tp, fp, fn, tn = 0, 0, 0, 0
     test_loop = tqdm(dataloader, unit=" batches")
     with torch.no_grad():
         for data, target in test_loop:
@@ -263,8 +260,22 @@ def test_model(model, criterion, dataloader):
             acc = pred.eq(target.view_as(pred)).sum().item()/len(target) #we get the accuracy of the prediction
             test_accuracy.update(acc, n=len(target))
             test_loop.set_postfix(loss=test_loss.avg, accuracy=test_accuracy.avg)
+
+            #Calculate confusion matrix
+            tp += ((pred == 1) & (target == 1)).sum().item()
+            fp += ((pred == 1) & (target == 0)).sum().item()
+            fn += ((pred == 0) & (target == 1)).sum().item()
+            tn += ((pred == 0) & (target == 0)).sum().item()
+        
+        #Calculate recall
+        recall_class0 = tp / (tp + fn)
+        recall_class1 = tn / (tn + fp)
+
+        #Create confusion matrix dictionary
+        confusion_matrix = {'TP': tp, 'FP': fp, 'FN': fn, 'TN': tn}
+
     
-    return test_loss.avg, test_accuracy.avg
+    return test_loss.avg, test_accuracy.avg, recall_class0, recall_class1, confusion_matrix
 
 def prepare_dataset(config):
     """Prepare the dataset.
