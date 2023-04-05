@@ -9,7 +9,7 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 if __name__ == "__main__":
 
     #Load the configuration file
-    config = load_config("config_vgg16.json")
+    config = load_config("config_feature_classifier.json")
 
     #Create the argument parser and define the arguments
     parser = argparse.ArgumentParser(prog='St.GeorgeClassifier VGG16 transfer learning',

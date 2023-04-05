@@ -58,7 +58,7 @@ def train_model(config, train_loader, val_loader):
 if __name__ == "__main__":
 
     #Load the configuration file
-    with open('config_feature_classifier.json', 'r') as f:
+    with open('config_smallnet.json', 'r') as f:
         config = json.load(f)
 
     #Create the argument parser and define the arguments
