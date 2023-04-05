@@ -2,7 +2,7 @@ import torch
 import argparse
 
 from torchvision import transforms
-from model import MyModel
+from model import Smallnet
 from utils import test_single_img, test_model, load_test_dataset_smallnet, load_config
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     #Create the model
-    model = MyModel().to(device)
+    model = Smallnet().to(device)
 
     #Load the best weights from the .pth file
     model.load_state_dict(torch.load('./best_model_smallnet.pth'))

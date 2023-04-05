@@ -411,7 +411,7 @@ def load_datasets_vgg16(config):
                 iaa.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
                 iaa.Crop(percent=(0, 0.3)),
             ]),
-            iaa.Sometimes(0.2, [
+            iaa.Sometimes(0.1, [
                 iaa.Grayscale(),
                 #iaa.pillike.Affine(rotate=(-20, 20), scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
                 iaa.ElasticTransformation(alpha=50.0, sigma=5.0),

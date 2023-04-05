@@ -2,7 +2,7 @@ import torch
 import argparse
 import json
 
-from model import MyModel
+from model import Smallnet
 from utils import train_single_epoch, validate_single_epoch, plot_loss_accuracy, prepare_dataset, calculate_mean_std, load_datasets_smallnet
 
 #If cuda is available, we use it for better performance
@@ -21,7 +21,7 @@ def train_model(config, train_loader, val_loader):
     train_accuracies, train_losses, val_accuracies, val_losses = [], [], [], []
 
     #Define the model
-    model = MyModel().to(device)
+    model = Smallnet().to(device)
 
     #Define the optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"], weight_decay=config["weight_decay"])

@@ -2,7 +2,7 @@ import torch.nn as nn
 from convblock import ConvBlock
 from linearblock import LinearBlock
 
-class MyModel(nn.Module):
+class Smallnet(nn.Module):
 
     def __init__(self):
         super().__init__()

@@ -22,6 +22,8 @@ class FeatureClassifier(nn.Module):
         self.mlp = nn.Sequential(
             LinearBlock(25088, 256),
             nn.Dropout(dropout),
+            LinearBlock(256, 256),
+            nn.Dropout(dropout),
             nn.Linear(256, 1),
             nn.Sigmoid(),
         )
