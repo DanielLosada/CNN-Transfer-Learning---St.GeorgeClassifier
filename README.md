@@ -6,7 +6,7 @@ The dataset is a two folder directory. The first folder contains images in which
 The dataset (george_test_task.zip) can be downloaded here: https://drive.google.com/drive/folders/1fIHdM54Q_eN5ZxF5nAGMaVIirMlNf3Sk?usp=sharing
 
 ## Approach
-I approached this image classification task using two models. The first one (called Smallnet) is a simple model made by me. The second approach (called FeatureClassifier) is using the VGG16 pretrained model to use it as a feature extractor for another model made. In both cases I followed this steps:
+I approached this image classification task using two models. The first one (called Smallnet) is a simple model made by me. The second approach (called FeatureClassifier) is using the VGG16 pretrained model from PyTorch to use it as a feature extractor for another model made. In both cases I followed this steps:
 * Data preparation: I started by unzipping the original zip file. Then the images are ordered in three sub-folders (train: 70%, eval: 20%, test: 10%). In the Smallnet, I also calculated the mean and std of the dataset for normalization. In both cases, the dataset is loaded with some standarization transformations applied over the images. In the FeatureClassifier, I applied data augmentation techniques that consist of random transformations of the images of the training split.
 
 * Model building: 
@@ -91,5 +91,13 @@ Test Loss: 0.4867, Test Acc: 0.7649, Recall No George: 0.8802, Recall George: 0.
 Confusion Matrix:
 TP: 294 FP: 94
 FN: 40  TN: 142
+
+### FeatureClassifer
+
+Test Loss: 0.2421, Test Acc: 0.9070, Recall No George: 0.9341, Recall George: 0.8686
+
+Confusion Matrix:
+TP: 312 FP: 31
+FN: 22  TN: 205
 
 
