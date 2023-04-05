@@ -149,8 +149,7 @@ def train_single_epoch(model, optimizer, criterion, dataloader, epoch_info):
     train_loss = AverageMeter()
     train_accuracy = AverageMeter()
     train_loop = tqdm(dataloader, unit=" batches")
-    print("epoch_info: ", epoch_info)
-    print("epoch_info[0] + 1: ", epoch_info[0] + 1)
+
     for data, target in train_loop:
         #Set description to the progress bar on the terminal
         

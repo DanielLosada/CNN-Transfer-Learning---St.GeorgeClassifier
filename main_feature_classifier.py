@@ -49,7 +49,7 @@ def fine_tuning(config, train_loader, eval_loader):
     
     #Generate, save, and show the accuracy and loss graphs of the train validate process
     plot = plot_loss_accuracy(train_accuracies, train_losses, val_accuracies, val_losses)
-    plot.savefig("plot_acc_loss_train_eval_feature_classifier.jpg")
+    plot.savefig("./plots/plot_acc_loss_train_eval_feature_classifier.jpg")
     plot.show()
 
 

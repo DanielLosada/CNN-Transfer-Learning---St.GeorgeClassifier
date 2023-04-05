@@ -8,5 +8,5 @@
     "train_dir": "./train",
     "eval_dir": "./eval",
     "test_dir": "./test",
-    "name_to_save_model": "best_model_feature_classifier.pth"
+    "name_to_save_model": "./saved_models/best_model_feature_classifier.pth"
 }
